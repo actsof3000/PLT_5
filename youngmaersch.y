@@ -579,11 +579,18 @@ bool findEntryInAnyScope(const string theName)
   }
 }
 
-int main()
+int main(int argc, char** argv) 
 {
-    do {
+    if (argc < 2) 
+    {
+        printf("You must specify a file in the command line!\n");
+        exit(1);
+    }
+
+    yyin = fopen(argv[1], "r");
+    do 
+    {
         yyparse();
     } while (!feof(yyin));
-    
     return 0;
 }                        
