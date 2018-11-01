@@ -5,11 +5,22 @@
 using namespace std;
 
 #define UNDEFINED  -1
+#define INT         1
+#define STR         2
+#define INT_OR_STR  3
+#define BOOL        4
+#define INT_OR_BOOL 5
+#define STR_OR_BOOL 6
+#define INT_OR_STR_OR_BOOL 7
 
 typedef struct{
   int type;
-  int numParams;
-  int returnType;
+  int nval;
+  int sval;
+  int bval;
+  int op;
+  int logop;
+  int unop;
 } TYPE_INFO;
 
 class SYMBOL_TABLE_ENTRY 
@@ -23,28 +34,18 @@ public:
   // Constructors
   SYMBOL_TABLE_ENTRY( ) { name = ""; entry.type = UNDEFINED; }
 
-  SYMBOL_TABLE_ENTRY(const string theName, const int theType)
+  SYMBOL_TABLE_ENTRY(const string theName, const TYPE_INFO theType)
   {
     name = theName;
     entry.type = theType;
-    entry.numParams = UNDEFINED;
-    entry.returnType = UNDEFINED;
+    entry.nval = theType.nval;
+    entry.sval = theType.sval;
+    entry.bval = theType.bval;
   }  
-  
-  SYMBOL_TABLE_ENTRY(const string theName, const int theType, const int numParam, const int returnType) 
-  {
-    name = theName;
-    entry.type = theType;
-    entry.numParams = numParam;
-    entry.returnType = returnType;
-  }
 
   // Accessors
   string getName() const { return name; }
   TYPE_INFO getTypeCode() const { return entry; }
-  int getType() const { return entry.type; }
-  int getNumParams() const { return entry.numParams; }
-  int getReturnType() const { return entry.returnType; }
 };
 
 #endif  // SYMBOL_TABLE_ENTRY_H

@@ -32,32 +32,13 @@ public:
   // If a SYMBOL_TABLE_ENTRY with name theName is
   // found in this symbol table, then return true;
   // otherwise, return false.
-  bool findEntry(string theName) 
+  TYPE_INFO findEntry(string theName) 
   {
+    TYPE_INFO info = {UNDEFINED};
     map<string, SYMBOL_TABLE_ENTRY>::iterator itr;
     if ((itr = hashTable.find(theName)) == hashTable.end())
-      return(false);
-    else return(true);
-  }
-
-  int getType(string theName)
-  {
-    return hashTable[theName].getType();
-  }
-
-  int getNumParams(string theName)
-  {
-    return hashTable[theName].getNumParams();
-  }
-
-  int getReturnType(string theName)
-  {
-    return hashTable[theName].getReturnType();
-  }
-
-  std::map < string, SYMBOL_TABLE_ENTRY > getMap()
-  {
-    return hashTable;
+      return(info);
+    else return(itr->second.getTypeCode());
   }
 };
 
