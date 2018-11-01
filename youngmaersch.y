@@ -32,7 +32,8 @@ bool isIntOrStrCompatible(const int theType);
 void printRule(const char *, const char *);
 void printTokenInfo(const char* tokenType, const char* lexeme);
 void beginScope();
-int endScope();
+void endScope();
+void cleanup();
 int yyerror(const char *s);
 int numLines = 1;
 
@@ -46,20 +47,20 @@ extern "C" {
 %union
 {
   char* text;
-  TYPE_INFO typeInfo;
+  TYPE_INFO typeinfo;
   int num;
 };
 
 /*Token declarations*/
 %token      T_IDENT T_UNKNOWN T_STRCONST T_LETSTAR T_INTCONST
-%token      T_INPUT T_PRINT T_IF T_LPAREN T_RPAREN
+%token      T_INPUT T_PRINT T_IF T_LPAREN T_RPAREN T_LAMBDA
 %token      T_ADD T_MULT T_DIV T_SUB T_AND T_OR T_NOT T_LT T_GT
 %token      T_LE T_GE T_EQ T_NE T_T T_NIL
 
 /*Link identifiers with their token*/
 %type <text> T_IDENT T_STRCONST T_INTCONST
-%type <typeInfo> N_CONST N_EXPR N_PARENTHESIZED_EXPR N_IF_EXPR N_ARITHLOGIC_EXPR
-%type <typeInfo> N_LET_EXPR N_PRINT_EXPR N_EXPR_LIST N_INPUT_EXPR N_BIN_OP
+%type <typeinfo> N_CONST N_EXPR N_PARENTHESIZED_EXPR N_IF_EXPR N_ARITHLOGIC_EXPR
+%type <typeinfo> N_LET_EXPR N_PRINT_EXPR N_EXPR_LIST N_INPUT_EXPR N_BIN_OP N_UN_OP N_LOG_OP
 
 /*Starting point*/
 %start      N_START
@@ -125,7 +126,7 @@ N_CONST                 :T_INTCONST
                             {
                                 printRule("CONST", "INTCONST");
                                 $$.type = INT;
-                                $$.nval = atoi($1)
+                                $$.nval = atoi($1);
                                 $$.bval = true;
                             }
                         | T_STRCONST
@@ -139,7 +140,7 @@ N_CONST                 :T_INTCONST
                             {
                                 printRule("CONST", "t");
                                 $$.type = BOOL;
-                                $$.bval = = true;
+                                $$.bval = true;
                             }
                         | T_NIL
                             {
@@ -352,7 +353,7 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                             $$.bval = true;
                                             if($2.bval == false && $3.bval == false)
                                             {
-                                                $$.bval = false
+                                                $$.bval = false;
                                             }
                                         }
                                         else if($1.logop == AND)
@@ -424,11 +425,11 @@ N_PRINT_EXPR            : T_PRINT N_EXPR
                                 printRule("PRINT_EXPR", "print EXPR");
                                 if($2.type == BOOL)
                                 {
-                                    printf($2.bval);
+                                    printf(($2.bval) ? "true" : "false");
                                 }
                                 else if($2.type == INT)
                                 {
-                                    printf($2.nval);
+                                    printf("%d", $2.nval);
                                 }
                                 else
                                 {
@@ -568,12 +569,12 @@ void beginScope()
   printf("\n___Entering new scope...\n\n");
 }
 
-int endScope()
+void endScope()
 {
-  int size = scopeStack.top().getMap().size();
+//   int size = scopeStack.top().getMap().size();
   scopeStack.pop();
   printf("\n___Exiting scope...\n\n");
-  return size;
+//   return size;
 }
 
 void printRule(const char *lhs, const char *rhs)
@@ -585,7 +586,7 @@ void printRule(const char *lhs, const char *rhs)
 int yyerror(const char *s)
 {
   printf("Line %d: %s\n", numLines, s);
-  cleanUp();
+  cleanup();
   exit(1);
 }
 
@@ -631,14 +632,14 @@ bool isIntOrStrCompatible(const int theType)
   return(isStrCompatible(theType) || isIntCompatible(theType));
 }
 
-void cleanUp()
+void cleanup()
 {
     if(scopeStack.empty())
         return;
     else
     {
         scopeStack.pop();
-        cleanUp;
+        cleanup();
     }
 }
 
@@ -656,6 +657,6 @@ int main(int argc, char** argv)
         yyparse();
     } while (!feof(yyin));
 
-    cleanUp();
+    cleanup();
     return 0;
 }                        

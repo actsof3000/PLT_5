@@ -12,12 +12,15 @@ using namespace std;
 #define INT_OR_BOOL 5
 #define STR_OR_BOOL 6
 #define INT_OR_STR_OR_BOOL 7
+#define NOT 8
+#define AND 9
+#define OR 10
 
 typedef struct{
   int type;
   int nval;
-  int sval;
-  int bval;
+  char* sval;
+  bool bval;
   int op;
   int logop;
   int unop;
@@ -37,7 +40,7 @@ public:
   SYMBOL_TABLE_ENTRY(const string theName, const TYPE_INFO theType)
   {
     name = theName;
-    entry.type = theType;
+    entry.type = theType.type;
     entry.nval = theType.nval;
     entry.sval = theType.sval;
     entry.bval = theType.bval;
