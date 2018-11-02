@@ -74,21 +74,21 @@ N_START                 :N_EXPR
                                 printf("\n---- Completed parsing ----\n\n");
                                 if($1.type == INT)
                                 {
-                                    printf("\nValue of the expression is %d\n", $1.nval);
+                                    printf("\nValue of the expression is: %d\n", $1.nval);
                                 }
                                 else if($1.type == STR)
                                 {
-                                    printf("\nValue of the expression is %s\n", $1.sval);
+                                    printf("\nValue of the expression is: %s\n", $1.sval);
                                 }
                                 else
                                 {
                                     if($1.bval == true)
                                     {
-                                        printf("\nValue of the expression is t\n");
+                                        printf("\nValue of the expression is: t\n");
                                     }
                                     else
                                     {
-                                        printf("\nValue of the expression is nil\n");
+                                        printf("\nValue of the expression is: nil\n");
                                     }
                                 }
                                 return 0;
@@ -246,6 +246,7 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                     break;
                                     
                                     case(RELATIONAL_OP):
+                                    {
                                         if(!isIntOrStrCompatible($2.type))
                                         {
                                             yyerror("Arg 1 must be integer or string");
@@ -256,25 +257,27 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                             yyerror("Arg 2 must be integer or string");
                                             return(1);
                                         }
-                                         if(isIntCompatible($2.type)&&!isIntOrStrCompatible($3.type))
+                                         if(isIntCompatible($2.type)&&!isIntCompatible($3.type))
                                         {
                                             yyerror("Arg 2 must be integer");
                                             return(1);
                                         }
-                                        else if(isStrCompatible($2.type)&&!isIntOrStrCompatible($3.type))
+                                         if(isStrCompatible($2.type)&&!isStrCompatible($3.type))
                                         {
                                             yyerror("Arg 2 must be string");
                                             return(1);
                                         }
                                         
                                         $$.type = BOOL;
-                                        if($2.type || $3.type == STR)
+                                        $$.bval = false;
+                                        bool isStrings = ($2.type == STR && $3.type == STR);
+                                        if(rel.top() == ">")
                                         {
-                                            $$.bval = false;
-                                        }
-                                        else if(rel.top() == ">")
-                                        {
-                                            if($2.nval > $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = false;
+                                            }
+                                            else if($2.nval > $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -286,7 +289,11 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                         }
                                         else if(rel.top() == "<")
                                         {
-                                            if($2.nval < $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = false;
+                                            }
+                                            else if($2.nval < $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -298,7 +305,11 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                         }
                                         else if(rel.top() == ">=")
                                         {
-                                            if($2.nval >= $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = false;
+                                            }
+                                            else if($2.nval >= $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -310,7 +321,11 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                         }
                                         else if(rel.top() == "<=")
                                         {
-                                            if($2.nval <= $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = false;
+                                            }
+                                            else if($2.nval <= $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -322,7 +337,11 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                         }
                                         else if(rel.top() == "=")
                                         {
-                                            if($2.nval == $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = (strcmp($2.sval, $3.sval) == 0);
+                                            }
+                                            else if($2.nval == $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -334,7 +353,11 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                         }
                                         else if(rel.top() == "/=")
                                         {
-                                            if($2.nval != $3.nval)
+                                            if(isStrings)
+                                            {
+                                                $$.bval = (strcmp($2.sval, $3.sval) != 0);
+                                            }
+                                            else if($2.nval != $3.nval)
                                             {
                                                 $$.bval = true;
                                             }
@@ -345,7 +368,7 @@ N_ARITHLOGIC_EXPR       : N_UN_OP N_EXPR
                                             rel.pop();
                                         }
                                     break;
-                                    
+                                    }
                                     case(LOGICAL_OP):
                                         if($1.logop == OR)
                                         {
@@ -425,15 +448,15 @@ N_PRINT_EXPR            : T_PRINT N_EXPR
                                 printRule("PRINT_EXPR", "print EXPR");
                                 if($2.type == BOOL)
                                 {
-                                    printf(($2.bval) ? "true" : "false");
+                                    printf("%s\n", ($2.bval) ? "true" : "false");
                                 }
                                 else if($2.type == INT)
                                 {
-                                    printf("%d", $2.nval);
+                                    printf("%d\n", $2.nval);
                                 }
                                 else
                                 {
-                                    printf($2.sval);
+                                    printf("%s\n", $2.sval);
                                 }
                                 $$.type = $2.type;
                                 $$.sval = $2.sval;
@@ -507,7 +530,7 @@ N_ARITH_OP              : T_MULT
                         | T_ADD
                             {
                                 printRule("ARITH_OP", "+");
-                                arith.push('<');
+                                arith.push('+');
                             }
                             ;
 N_LOG_OP                : T_AND
@@ -524,32 +547,32 @@ N_LOG_OP                : T_AND
 N_REL_OP                : T_LT
                             {
                                 printRule ("REL_OP", "<");
-                                arith.push('<');
+                                rel.push("<");
                             }
                         | T_GT
                             {
                                 printRule("REL_OP", ">");
-                                arith.push('>');
+                                rel.push(">");
                             }
                         | T_LE
                             {
                                 printRule("REL_OP", "<=");
-                                arith.push('<=');
+                                rel.push("<=");
                             }
                         | T_GE
                             {
                                 printRule("REL_OP", ">=");
-                                arith.push('>=');
+                                rel.push(">=");
                             }
                         | T_EQ
                             {
                                 printRule("REL_OP", "=");
-                                arith.push('=');
+                                rel.push("=");
                             }
                         | T_NE
                             {
                                 printRule("REL_OP", "/=");
-                                arith.push('/=');
+                                rel.push("/=");
                             }
                             ;
 N_UN_OP                 : T_NOT
